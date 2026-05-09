@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, MapPin, Sun, Utensils, Bike, Leaf } from "lucide-react";
 import { useState } from "react";
 import { SectionHeader } from "@/components/SectionHeader";
+import { RequireAuth } from "@/components/RequireAuth";
 
 export const Route = createFileRoute("/planner")({
   head: () => ({
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/planner")({
       { name: "description", content: "Generate a personalized, sustainable Goa itinerary in seconds." },
     ],
   }),
-  component: Planner,
+  component: () => <RequireAuth><Planner /></RequireAuth>,
 });
 
 type Day = { day: number; title: string; items: { time: string; icon: typeof Sun; place: string; note: string }[]; eco: number };

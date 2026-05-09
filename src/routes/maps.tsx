@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-import { Navigation, Leaf, Users, Clock, Route as RouteIcon, KeyRound, Sparkles, AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Navigation, Leaf, Users, Clock, Route as RouteIcon, Sparkles, AlertTriangle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SectionHeader } from "@/components/SectionHeader";
 
@@ -16,142 +14,79 @@ export const Route = createFileRoute("/maps")({
   component: MapsPage,
 });
 
-// Goa POIs with mock crowd + eco data
 const POIS = [
-  { id: "baga",    name: "Baga Beach",        lng: 73.7517, lat: 15.5560, crowd: 92, eco: 5.4, type: "beach" },
-  { id: "anjuna",  name: "Anjuna Flea Mkt",   lng: 73.7400, lat: 15.5735, crowd: 74, eco: 6.8, type: "market" },
-  { id: "morjim",  name: "Morjim Beach",      lng: 73.7322, lat: 15.6300, crowd: 38, eco: 8.7, type: "beach" },
-  { id: "vagator", name: "Vagator Cliffs",    lng: 73.7395, lat: 15.5970, crowd: 54, eco: 8.1, type: "viewpoint" },
-  { id: "fontain", name: "Fontainhas Quarter",lng: 73.8330, lat: 15.4969, crowd: 41, eco: 8.4, type: "heritage" },
-  { id: "oldgoa",  name: "Old Goa Basilica",  lng: 73.9115, lat: 15.5009, crowd: 61, eco: 7.6, type: "heritage" },
-  { id: "palolem", name: "Palolem Beach",     lng: 74.0233, lat: 15.0100, crowd: 33, eco: 9.0, type: "beach" },
-  { id: "dudhsa",  name: "Dudhsagar Falls",   lng: 74.3140, lat: 15.3144, crowd: 88, eco: 7.2, type: "nature" },
-  { id: "ashvem",  name: "Ashvem Beach",      lng: 73.7280, lat: 15.6480, crowd: 22, eco: 9.2, type: "beach" },
-  { id: "panjim",  name: "Panjim Riverfront", lng: 73.8278, lat: 15.4989, crowd: 58, eco: 7.8, type: "city" },
+  { id: "baga",    name: "Baga Beach",         lat: 15.5560, lng: 73.7517, crowd: 92, eco: 5.4 },
+  { id: "anjuna",  name: "Anjuna Flea Market", lat: 15.5735, lng: 73.7400, crowd: 74, eco: 6.8 },
+  { id: "morjim",  name: "Morjim Beach",       lat: 15.6300, lng: 73.7322, crowd: 38, eco: 8.7 },
+  { id: "vagator", name: "Vagator Cliffs",     lat: 15.5970, lng: 73.7395, crowd: 54, eco: 8.1 },
+  { id: "fontain", name: "Fontainhas Quarter", lat: 15.4969, lng: 73.8330, crowd: 41, eco: 8.4 },
+  { id: "oldgoa",  name: "Old Goa Basilica",   lat: 15.5009, lng: 73.9115, crowd: 61, eco: 7.6 },
+  { id: "palolem", name: "Palolem Beach",      lat: 15.0100, lng: 74.0233, crowd: 33, eco: 9.0 },
+  { id: "dudhsa",  name: "Dudhsagar Falls",    lat: 15.3144, lng: 74.3140, crowd: 88, eco: 7.2 },
+  { id: "ashvem",  name: "Ashvem Beach",       lat: 15.6480, lng: 73.7280, crowd: 22, eco: 9.2 },
+  { id: "panjim",  name: "Panjim Riverfront",  lat: 15.4989, lng: 73.8278, crowd: 58, eco: 7.8 },
 ];
-
-const TOKEN_KEY = "ecoexplore.mapbox.token";
 
 type Mode = "fastest" | "eco" | "scenic";
 
 function crowdColor(c: number) {
-  if (c >= 75) return "#ef6a55"; // coral
-  if (c >= 45) return "#e9b949"; // sun
-  return "#3aa775"; // eco
+  if (c >= 75) return "#ef6a55";
+  if (c >= 45) return "#e9b949";
+  return "#3aa775";
+}
+
+// Haversine
+function distKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6371;
+  const dLat = (b.lat - a.lat) * Math.PI / 180;
+  const dLng = (b.lng - a.lng) * Math.PI / 180;
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI/180) * Math.cos(b.lat * Math.PI/180) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
 }
 
 function MapsPage() {
-  const mapEl = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const [token, setToken] = useState<string>("");
-  const [tokenInput, setTokenInput] = useState("");
+  const [mounted, setMounted] = useState(false);
   const [from, setFrom] = useState("baga");
   const [to, setTo] = useState("morjim");
   const [mode, setMode] = useState<Mode>("eco");
-  const [loadingRoute, setLoadingRoute] = useState(false);
-  const [routeInfo, setRouteInfo] = useState<null | { distance: number; duration: number; crowd: number; eco: number; alt: { mode: Mode; saves: string }[] }>(null);
+  const [routeInfo, setRouteInfo] = useState<null | { distance: number; duration: number; crowd: number; eco: number; alt: { mode: Mode; saves: string }[]; coords: [number, number][] }>(null);
+  const [loading, setLoading] = useState(false);
 
-  // hydrate saved token
-  useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
-    if (saved) setToken(saved);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  // init map
-  useEffect(() => {
-    if (!token || !mapEl.current || mapRef.current) return;
-    mapboxgl.accessToken = token;
-    const map = new mapboxgl.Map({
-      container: mapEl.current,
-      style: "mapbox://styles/mapbox/light-v11",
-      center: [73.85, 15.45],
-      zoom: 9.4,
-      attributionControl: false,
-    });
-    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
-    mapRef.current = map;
-
-    map.on("load", () => {
-      // crowd heat circles
-      POIS.forEach((p) => {
-        const el = document.createElement("div");
-        el.style.cssText = `width:${18 + p.crowd / 4}px;height:${18 + p.crowd / 4}px;border-radius:9999px;background:${crowdColor(p.crowd)};opacity:0.78;border:2px solid white;box-shadow:0 4px 14px rgba(0,0,0,0.18);cursor:pointer;display:grid;place-items:center;color:white;font:600 10px/1 Inter,sans-serif;`;
-        el.textContent = String(p.crowd);
-        new mapboxgl.Marker(el)
-          .setLngLat([p.lng, p.lat])
-          .setPopup(new mapboxgl.Popup({ offset: 16 }).setHTML(
-            `<div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:160px">
-              <div style="font-weight:600;font-size:14px;margin-bottom:4px">${p.name}</div>
-              <div style="font-size:12px;color:#64748b">Crowd <b style="color:${crowdColor(p.crowd)}">${p.crowd}%</b> · Eco <b>${p.eco}</b></div>
-            </div>`
-          ))
-          .addTo(map);
-      });
-    });
-
-    return () => { map.remove(); mapRef.current = null; };
-  }, [token]);
+  const a = POIS.find(p => p.id === from)!;
+  const b = POIS.find(p => p.id === to)!;
 
   const findRoute = async () => {
-    const map = mapRef.current;
-    if (!map || !token) return;
-    const a = POIS.find(p => p.id === from)!;
-    const b = POIS.find(p => p.id === to)!;
-    if (!a || !b || a.id === b.id) return;
-    setLoadingRoute(true);
-    setRouteInfo(null);
-
+    if (a.id === b.id) return;
+    setLoading(true);
     try {
-      const profile = mode === "fastest" ? "driving-traffic" : mode === "eco" ? "cycling" : "walking";
-      const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${a.lng},${a.lat};${b.lng},${b.lat}?geometries=geojson&overview=full&access_token=${token}`;
+      const profile = mode === "fastest" ? "driving" : mode === "eco" ? "cycling" : "walking";
+      // OSRM public demo server — free, no key
+      const url = `https://router.project-osrm.org/route/v1/${profile}/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
       const res = await fetch(url);
       const json = await res.json();
-      const route = json.routes?.[0];
-      if (!route) throw new Error("No route");
-
-      const geo = {
-        type: "Feature" as const,
-        properties: {},
-        geometry: route.geometry,
-      };
-      const src = map.getSource("ecoroute") as mapboxgl.GeoJSONSource | undefined;
-      if (src) {
-        src.setData(geo as any);
+      const r = json.routes?.[0];
+      let coords: [number, number][];
+      let distance: number, duration: number;
+      if (r) {
+        coords = r.geometry.coordinates.map((c: number[]) => [c[1], c[0]] as [number, number]);
+        distance = r.distance; duration = r.duration;
       } else {
-        map.addSource("ecoroute", { type: "geojson", data: geo as any });
-        map.addLayer({
-          id: "ecoroute-line",
-          type: "line",
-          source: "ecoroute",
-          layout: { "line-join": "round", "line-cap": "round" },
-          paint: {
-            "line-color": mode === "fastest" ? "#ef6a55" : mode === "eco" ? "#3aa775" : "#0f766e",
-            "line-width": 5,
-            "line-opacity": 0.9,
-          },
-        });
+        // Fallback: straight line
+        coords = [[a.lat, a.lng], [b.lat, b.lng]];
+        const km = distKm(a, b);
+        distance = km * 1000;
+        duration = (km / (mode === "fastest" ? 50 : mode === "eco" ? 18 : 5)) * 3600;
       }
-      // recolor on subsequent runs
-      if (map.getLayer("ecoroute-line")) {
-        map.setPaintProperty("ecoroute-line", "line-color",
-          mode === "fastest" ? "#ef6a55" : mode === "eco" ? "#3aa775" : "#0f766e");
-      }
-
-      // fit bounds
-      const coords: [number, number][] = route.geometry.coordinates;
-      const bounds = coords.reduce((b, c) => b.extend(c as any), new mapboxgl.LngLatBounds(coords[0], coords[0]));
-      map.fitBounds(bounds, { padding: 80, duration: 900 });
-
-      // mock crowd-aware scoring
       const avgCrowd = Math.round((a.crowd + b.crowd) / 2 + (mode === "fastest" ? 8 : mode === "eco" ? -14 : -6));
       const ecoBoost = mode === "eco" ? 1.6 : mode === "scenic" ? 0.8 : -0.4;
       const ecoScore = +Math.min(10, Math.max(3, (a.eco + b.eco) / 2 + ecoBoost)).toFixed(1);
-
       setRouteInfo({
-        distance: route.distance,
-        duration: route.duration,
+        distance, duration,
         crowd: Math.max(8, Math.min(98, avgCrowd)),
         eco: ecoScore,
+        coords,
         alt: ([
           { mode: "fastest", saves: "−12 min" },
           { mode: "eco", saves: "−38% crowd · +1.4 eco" },
@@ -160,17 +95,9 @@ function MapsPage() {
       });
     } catch (e) {
       console.error(e);
-      setRouteInfo(null);
     } finally {
-      setLoadingRoute(false);
+      setLoading(false);
     }
-  };
-
-  const saveToken = () => {
-    const t = tokenInput.trim();
-    if (!t.startsWith("pk.")) return;
-    localStorage.setItem(TOKEN_KEY, t);
-    setToken(t);
   };
 
   return (
@@ -178,132 +105,144 @@ function MapsPage() {
       <SectionHeader
         eyebrow="Smart Maps · Live"
         title="Navigate Goa, crowd-aware."
-        subtitle="See real-time density across hotspots and let the AI route you around the chaos — with a greener footprint."
+        subtitle="Real-time density across hotspots — let the AI route you around the chaos with a greener footprint."
       />
 
-      {!token && (
-        <div className="mt-10 bg-card rounded-3xl border border-border/60 shadow-soft p-8 max-w-2xl mx-auto">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="size-11 rounded-2xl bg-primary/10 text-primary grid place-items-center"><KeyRound className="size-5" /></div>
-            <div>
-              <h3 className="font-display text-2xl">Connect Mapbox</h3>
-              <p className="text-sm text-muted-foreground">Paste your free Mapbox public token to enable the live map.</p>
+      <div className="mt-10 grid gap-5 lg:grid-cols-[360px_1fr]">
+        <div className="bg-card rounded-3xl p-6 shadow-soft border border-border/60 h-fit lg:sticky lg:top-28">
+          <h3 className="font-display text-xl flex items-center gap-2 mb-5"><RouteIcon className="size-5 text-primary" /> Plan a route</h3>
+          <Field label="From"><Select value={from} onChange={setFrom} /></Field>
+          <Field label="To"><Select value={to} onChange={setTo} /></Field>
+          <Field label="Routing intent">
+            <div className="grid grid-cols-3 gap-2">
+              {(["fastest", "eco", "scenic"] as Mode[]).map(m => (
+                <button key={m} onClick={() => setMode(m)}
+                  className={`rounded-xl py-2.5 text-xs font-medium capitalize transition ${
+                    mode === m ? "bg-primary text-primary-foreground shadow-soft" : "bg-secondary hover:bg-accent"
+                  }`}>{m}</button>
+              ))}
             </div>
-          </div>
-          <ol className="text-sm text-muted-foreground space-y-1 mb-4 list-decimal pl-5">
-            <li>Sign up at <a className="text-primary underline" href="https://account.mapbox.com/access-tokens/" target="_blank" rel="noreferrer">mapbox.com</a> (free tier).</li>
-            <li>Copy your <b>default public token</b> (starts with <code>pk.</code>).</li>
-            <li>Paste it below — stored locally in your browser only.</li>
-          </ol>
-          <div className="flex gap-2">
-            <input
-              value={tokenInput}
-              onChange={(e) => setTokenInput(e.target.value)}
-              placeholder="pk.eyJ..."
-              className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm font-mono"
-            />
-            <button onClick={saveToken} className="rounded-xl bg-primary text-primary-foreground px-5 text-sm font-medium shadow-glow">
-              Connect
-            </button>
+          </Field>
+          <button
+            onClick={findRoute}
+            disabled={loading || from === to}
+            className="mt-4 w-full inline-flex justify-center items-center gap-2 rounded-full bg-gradient-eco text-primary-foreground py-3.5 font-medium shadow-glow disabled:opacity-60"
+          >
+            {loading ? <Loader2 className="size-4 animate-spin" /> : <Navigation className="size-4" />} {loading ? "Routing…" : "Find smart route"}
+          </button>
+
+          <div className="mt-6 pt-5 border-t border-border">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Crowd legend</div>
+            <div className="space-y-1.5 text-xs">
+              <Legend color="#3aa775" label="Calm · under 45%" />
+              <Legend color="#e9b949" label="Moderate · 45–75%" />
+              <Legend color="#ef6a55" label="Packed · 75%+" />
+            </div>
           </div>
         </div>
-      )}
 
-      {token && (
-        <div className="mt-10 grid gap-5 lg:grid-cols-[360px_1fr]">
-          {/* CONTROLS */}
-          <div className="bg-card rounded-3xl p-6 shadow-soft border border-border/60 h-fit lg:sticky lg:top-28">
-            <h3 className="font-display text-xl flex items-center gap-2 mb-5"><RouteIcon className="size-5 text-primary" /> Plan a route</h3>
-
-            <Field label="From">
-              <Select value={from} onChange={setFrom} />
-            </Field>
-            <Field label="To">
-              <Select value={to} onChange={setTo} />
-            </Field>
-
-            <Field label="Routing intent">
-              <div className="grid grid-cols-3 gap-2">
-                {(["fastest", "eco", "scenic"] as Mode[]).map(m => (
-                  <button key={m} onClick={() => setMode(m)}
-                    className={`rounded-xl py-2.5 text-xs font-medium capitalize transition ${
-                      mode === m ? "bg-primary text-primary-foreground shadow-soft" : "bg-secondary hover:bg-accent"
-                    }`}>{m}</button>
-                ))}
-              </div>
-            </Field>
-
-            <button
-              onClick={findRoute}
-              disabled={loadingRoute || from === to}
-              className="mt-4 w-full inline-flex justify-center items-center gap-2 rounded-full bg-gradient-eco text-primary-foreground py-3.5 font-medium shadow-glow disabled:opacity-60"
-            >
-              <Navigation className="size-4" /> {loadingRoute ? "Routing…" : "Find smart route"}
-            </button>
-
-            <button
-              onClick={() => { localStorage.removeItem(TOKEN_KEY); setToken(""); }}
-              className="mt-3 w-full text-xs text-muted-foreground hover:text-foreground"
-            >
-              Disconnect Mapbox token
-            </button>
-
-            <div className="mt-6 pt-5 border-t border-border">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Crowd legend</div>
-              <div className="space-y-1.5 text-xs">
-                <Legend color="#3aa775" label="Calm · under 45%" />
-                <Legend color="#e9b949" label="Moderate · 45–75%" />
-                <Legend color="#ef6a55" label="Packed · 75%+" />
-              </div>
-            </div>
+        <div className="space-y-5">
+          <div className="relative rounded-3xl overflow-hidden shadow-soft border border-border/60 bg-secondary" style={{ height: "560px" }}>
+            {mounted ? <LeafletMap pois={POIS} routeCoords={routeInfo?.coords ?? null} mode={mode} /> : (
+              <div className="absolute inset-0 grid place-items-center text-muted-foreground text-sm">Loading map…</div>
+            )}
           </div>
 
-          {/* MAP + INSIGHT */}
-          <div className="space-y-5">
-            <div className="relative rounded-3xl overflow-hidden shadow-soft border border-border/60 bg-secondary" style={{ height: "560px" }}>
-              <div ref={mapEl} className="absolute inset-0" />
-            </div>
-
-            <AnimatePresence>
-              {routeInfo && (
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="bg-card rounded-3xl p-6 shadow-soft border border-border/60">
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-primary font-semibold mb-2">
-                    <Sparkles className="size-3.5" /> AI route insight
+          <AnimatePresence>
+            {routeInfo && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                className="bg-card rounded-3xl p-6 shadow-soft border border-border/60">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-primary font-semibold mb-2">
+                  <Sparkles className="size-3.5" /> AI route insight
+                </div>
+                <div className="grid sm:grid-cols-4 gap-4 mb-5">
+                  <Metric icon={Clock} label="Duration" value={`${Math.round(routeInfo.duration / 60)} min`} />
+                  <Metric icon={RouteIcon} label="Distance" value={`${(routeInfo.distance / 1000).toFixed(1)} km`} />
+                  <Metric icon={Users} label="Avg crowd" value={`${routeInfo.crowd}%`} tone={crowdColor(routeInfo.crowd)} />
+                  <Metric icon={Leaf} label="Eco score" value={`${routeInfo.eco}/10`} tone="#3aa775" />
+                </div>
+                <div className={`rounded-2xl p-4 flex gap-3 items-start ${routeInfo.crowd >= 70 ? "bg-coral/10" : "bg-eco/10"}`}>
+                  <AlertTriangle className={`size-5 shrink-0 ${routeInfo.crowd >= 70 ? "text-coral" : "text-eco"}`} />
+                  <div className="text-sm">
+                    {routeInfo.crowd >= 70
+                      ? <>This corridor is <b>busy right now</b>. Try the <b>eco</b> alternative — cuts crowd density by ~38% and improves your eco score.</>
+                      : <>Smooth sailing. <b>Crowd density is low</b> on this segment; great window to depart in the next 45 minutes.</>}
                   </div>
-                  <div className="grid sm:grid-cols-4 gap-4 mb-5">
-                    <Metric icon={Clock} label="Duration" value={`${Math.round(routeInfo.duration / 60)} min`} />
-                    <Metric icon={RouteIcon} label="Distance" value={`${(routeInfo.distance / 1000).toFixed(1)} km`} />
-                    <Metric icon={Users} label="Avg crowd" value={`${routeInfo.crowd}%`} tone={crowdColor(routeInfo.crowd)} />
-                    <Metric icon={Leaf} label="Eco score" value={`${routeInfo.eco}/10`} tone="#3aa775" />
+                </div>
+                <div className="mt-5">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Switch route style</div>
+                  <div className="flex flex-wrap gap-2">
+                    {routeInfo.alt.map(opt => (
+                      <button key={opt.mode} onClick={() => { setMode(opt.mode); setTimeout(findRoute, 50); }}
+                        className="rounded-full px-4 py-2 text-xs bg-secondary hover:bg-accent">
+                        <span className="capitalize font-medium">{opt.mode}</span> <span className="text-muted-foreground">· {opt.saves}</span>
+                      </button>
+                    ))}
                   </div>
-                  <div className={`rounded-2xl p-4 flex gap-3 items-start ${routeInfo.crowd >= 70 ? "bg-coral/10" : "bg-eco/10"}`}>
-                    <AlertTriangle className={`size-5 shrink-0 ${routeInfo.crowd >= 70 ? "text-coral" : "text-eco"}`} />
-                    <div className="text-sm">
-                      {routeInfo.crowd >= 70
-                        ? <>This corridor is <b>busy right now</b>. Try the <b>eco</b> alternative — it cuts crowd density by ~38% and improves your trip's eco score.</>
-                        : <>Smooth sailing. <b>Crowd density is low</b> on this segment; great window to depart in the next 45 minutes.</>}
-                    </div>
-                  </div>
-
-                  <div className="mt-5">
-                    <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Switch route style</div>
-                    <div className="flex flex-wrap gap-2">
-                      {routeInfo.alt.map(a => (
-                        <button key={a.mode} onClick={() => { setMode(a.mode); setTimeout(findRoute, 50); }}
-                          className="rounded-full px-4 py-2 text-xs bg-secondary hover:bg-accent">
-                          <span className="capitalize font-medium">{a.mode}</span> <span className="text-muted-foreground">· {a.saves}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      )}
+      </div>
     </div>
+  );
+}
+
+function LeafletMap({ pois, routeCoords, mode }: { pois: typeof POIS; routeCoords: [number, number][] | null; mode: Mode }) {
+  const [libs, setLibs] = useState<{ RL: any; L: any } | null>(null);
+
+  useEffect(() => {
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+    Promise.all([import("react-leaflet"), import("leaflet")]).then(([RL, L]) => {
+      setLibs({ RL, L: L.default ?? L });
+    });
+  }, []);
+
+  if (!libs) {
+    return <div className="absolute inset-0 grid place-items-center text-muted-foreground text-sm">Loading map…</div>;
+  }
+
+  const { MapContainer, TileLayer, CircleMarker, Tooltip, Polyline, useMap } = libs.RL;
+  const L = libs.L;
+  const lineColor = mode === "fastest" ? "#ef6a55" : mode === "eco" ? "#3aa775" : "#0f766e";
+
+  function FitBounds({ coords }: { coords: [number, number][] | null }) {
+    const map = useMap();
+    useEffect(() => {
+      if (!coords || coords.length < 2) return;
+      map.fitBounds(L.latLngBounds(coords as any), { padding: [50, 50] });
+    }, [coords, map]);
+    return null;
+  }
+
+  return (
+    <MapContainer center={[15.45, 73.95]} zoom={9} className="absolute inset-0" style={{ height: "100%", width: "100%" }} scrollWheelZoom>
+      <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      {pois.map((p) => (
+        <CircleMarker key={p.id} center={[p.lat, p.lng]} radius={8 + p.crowd / 12}
+          pathOptions={{ color: "white", weight: 2, fillColor: crowdColor(p.crowd), fillOpacity: 0.85 }}>
+          <Tooltip direction="top" offset={[0, -8]}>
+            <div style={{ fontFamily: "Inter, sans-serif" }}>
+              <div style={{ fontWeight: 600 }}>{p.name}</div>
+              <div style={{ fontSize: 12 }}>Crowd <b style={{ color: crowdColor(p.crowd) }}>{p.crowd}%</b> · Eco <b>{p.eco}</b></div>
+            </div>
+          </Tooltip>
+        </CircleMarker>
+      ))}
+      {routeCoords && routeCoords.length > 1 && (
+        <>
+          <Polyline positions={routeCoords as any} pathOptions={{ color: lineColor, weight: 5, opacity: 0.9 }} />
+          <FitBounds coords={routeCoords} />
+        </>
+      )}
+    </MapContainer>
   );
 }
 
@@ -315,7 +254,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
-
 function Select({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)}
@@ -324,7 +262,6 @@ function Select({ value, onChange }: { value: string; onChange: (v: string) => v
     </select>
   );
 }
-
 function Legend({ color, label }: { color: string; label: string }) {
   return (
     <div className="flex items-center gap-2">
@@ -333,7 +270,6 @@ function Legend({ color, label }: { color: string; label: string }) {
     </div>
   );
 }
-
 function Metric({ icon: Icon, label, value, tone }: { icon: any; label: string; value: string; tone?: string }) {
   return (
     <div className="rounded-2xl bg-secondary/60 p-4">

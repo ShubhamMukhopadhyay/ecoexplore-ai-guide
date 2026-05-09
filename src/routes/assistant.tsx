@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Sparkles, Bot, User } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
+import { RequireAuth } from "@/components/RequireAuth";
 
 export const Route = createFileRoute("/assistant")({
   head: () => ({
@@ -11,13 +12,13 @@ export const Route = createFileRoute("/assistant")({
       { name: "description", content: "Chat with an AI that knows Goa — places, food, routes, vibes." },
     ],
   }),
-  component: Assistant,
+  component: () => <RequireAuth><Assistant /></RequireAuth>,
 });
 
-type Msg = { role: "user" | "ai"; text: string };
+type Msg = { role: "user" | "assistant"; content: string };
 
 const seed: Msg[] = [
-  { role: "ai", text: "Hi! I'm your Goa travel concierge. Ask me anything — best beach for sunset, cheap thali nearby, a quiet corner of Old Goa…" },
+  { role: "assistant", content: "Hi! I'm your Goa travel concierge. Ask me anything — best beach for sunset, cheap thali nearby, a quiet corner of Old Goa…" },
 ];
 
 const suggestions = [
@@ -27,15 +28,6 @@ const suggestions = [
   "Hidden waterfall trek for monsoon",
 ];
 
-const fakeReply = (q: string) => {
-  const k = q.toLowerCase();
-  if (k.includes("sunset")) return "Try Cabo de Rama or Kakolem — both quiet, both stunning. Avoid Anjuna after 5pm this week (festival overflow).";
-  if (k.includes("thali")) return "Hotel Venite in Fontainhas does a Goan fish thali for ₹250. Or Ritz Classic — locals' favourite, full meal under ₹400.";
-  if (k.includes("eco") || k.includes("itinerary")) return "Day 1 Assagao + Vagator (scooter). Day 2 Divar Island ferry + heritage. Day 3 Cola lagoon homestay. Eco score ~8.6.";
-  if (k.includes("waterfall") || k.includes("trek")) return "Tambdi Surla → Hivre Falls is perfect monsoon — 4 km, lush, almost empty. Bring waterproof shoes.";
-  return "Lovely question. In short: aim for South Goa for calm, North for buzz. Tell me your dates and vibe and I'll draft a plan.";
-};
-
 function Assistant() {
   const [messages, setMessages] = useState<Msg[]>(seed);
   const [input, setInput] = useState("");
@@ -44,20 +36,34 @@ function Assistant() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, typing]);
 
-  const send = (text: string) => {
-    if (!text.trim()) return;
-    setMessages(m => [...m, { role: "user", text }]);
+  const send = async (text: string) => {
+    if (!text.trim() || typing) return;
+    const next: Msg[] = [...messages, { role: "user", content: text }];
+    setMessages(next);
     setInput("");
     setTyping(true);
-    setTimeout(() => {
-      setMessages(m => [...m, { role: "ai", text: fakeReply(text) }]);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessages((m) => [...m, { role: "assistant", content: data.error ?? "Something went wrong." }]);
+      } else {
+        setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
+      }
+    } catch (e: any) {
+      setMessages((m) => [...m, { role: "assistant", content: "Network error. Please try again." }]);
+    } finally {
       setTyping(false);
-    }, 900);
+    }
   };
 
   return (
     <div className="mx-auto max-w-4xl px-6 pt-12 pb-12">
-      <SectionHeader eyebrow="AI Assistant" title="Your concierge for Goa." subtitle="It listens, suggests, and never up-sells." align="center" />
+      <SectionHeader eyebrow="AI Assistant · Live" title="Your concierge for Goa." subtitle="Powered by Lovable AI — real answers, real time." align="center" />
 
       <div className="mt-10 bg-card rounded-3xl shadow-soft border border-border/60 overflow-hidden flex flex-col h-[70vh]">
         <div className="px-5 py-4 border-b border-border flex items-center gap-3 bg-secondary/40">
@@ -72,10 +78,10 @@ function Assistant() {
           {messages.map((m, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
               className={`flex gap-3 ${m.role === "user" ? "justify-end" : ""}`}>
-              {m.role === "ai" && <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0"><Bot className="size-4" /></div>}
-              <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+              {m.role === "assistant" && <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0"><Bot className="size-4" /></div>}
+              <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
                 m.role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-secondary text-secondary-foreground rounded-bl-sm"
-              }`}>{m.text}</div>
+              }`}>{m.content}</div>
               {m.role === "user" && <div className="size-8 rounded-full bg-coral/15 text-coral grid place-items-center shrink-0"><User className="size-4" /></div>}
             </motion.div>
           ))}
@@ -108,7 +114,7 @@ function Assistant() {
           <input value={input} onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about Goa — beaches, food, routes…"
             className="flex-1 bg-secondary rounded-full px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-          <button type="submit" className="size-11 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-soft hover:scale-105 transition">
+          <button type="submit" disabled={typing} className="size-11 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-soft hover:scale-105 transition disabled:opacity-60">
             <Send className="size-4" />
           </button>
         </form>
