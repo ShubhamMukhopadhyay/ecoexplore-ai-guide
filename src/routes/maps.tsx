@@ -152,11 +152,11 @@ function MapsPage() {
         duration: route.duration,
         crowd: Math.max(8, Math.min(98, avgCrowd)),
         eco: ecoScore,
-        alt: [
+        alt: ([
           { mode: "fastest", saves: "−12 min" },
           { mode: "eco", saves: "−38% crowd · +1.4 eco" },
           { mode: "scenic", saves: "+3 hidden gems" },
-        ].filter(o => o.mode !== mode),
+        ] as { mode: Mode; saves: string }[]).filter(o => o.mode !== mode),
       });
     } catch (e) {
       console.error(e);
