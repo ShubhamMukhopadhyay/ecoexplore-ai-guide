@@ -190,16 +190,6 @@ function MapsPage() {
 }
 
 function LeafletMap({ pois, routeCoords, mode }: { pois: typeof POIS; routeCoords: [number, number][] | null; mode: Mode }) {
-  // Lazy require so it only runs in the browser
-  const RL = useMemo(() => {
-    // @ts-expect-error - dynamic require pattern OK for browser-only
-    const r = require("react-leaflet");
-    return r;
-  }, []);
-  const L = useMemo(() => {
-    // @ts-expect-error
-    return require("leaflet");
-  }, []);
   // Inject leaflet css client side
   useEffect(() => {
     if (document.getElementById("leaflet-css")) return;
@@ -209,6 +199,11 @@ function LeafletMap({ pois, routeCoords, mode }: { pois: typeof POIS; routeCoord
     link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
     document.head.appendChild(link);
   }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RL = (globalThis as any).__rl ?? ((globalThis as any).__rl = require("react-leaflet"));
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const L = (globalThis as any).__l ?? ((globalThis as any).__l = require("leaflet"));
 
   const { MapContainer, TileLayer, CircleMarker, Tooltip, Polyline, useMap } = RL;
   const lineColor = mode === "fastest" ? "#ef6a55" : mode === "eco" ? "#3aa775" : "#0f766e";
