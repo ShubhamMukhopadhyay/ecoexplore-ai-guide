@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { SiteLayout } from "@/components/SiteLayout";
 
 import appCss from "../styles.css?url";
 
@@ -72,19 +73,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "EcoExplore — AI-Powered Smart Tourism for Goa" },
+      { name: "description", content: "Plan smarter, greener trips across Goa with AI itineraries, live crowd intelligence, hidden gems, and sustainability scores." },
+      { name: "author", content: "EcoExplore" },
+      { name: "theme-color", content: "#0f766e" },
+      { property: "og:title", content: "EcoExplore — Smart, Sustainable Goa" },
+      { property: "og:description", content: "AI itineraries, hidden gems, eco scores and live crowd intelligence for Goa." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
       },
     ],
   }),
@@ -113,7 +118,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <SiteLayout />
     </QueryClientProvider>
   );
 }
