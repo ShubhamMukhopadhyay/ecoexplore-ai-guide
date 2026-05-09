@@ -7,6 +7,7 @@ const nav = [
   { to: "/explore", label: "Explore" },
   { to: "/planner", label: "AI Planner" },
   { to: "/dashboard", label: "Dashboard" },
+  { to: "/maps", label: "Smart Maps" },
   { to: "/gems", label: "Hidden Gems" },
   { to: "/sustainability", label: "Eco Score" },
   { to: "/about", label: "About" },
