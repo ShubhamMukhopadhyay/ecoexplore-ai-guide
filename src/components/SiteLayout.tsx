@@ -1,6 +1,7 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Leaf, Menu, X, MessageCircle } from "lucide-react";
+import { Leaf, Menu, X, MessageCircle, LogOut, User as UserIcon } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -16,6 +17,13 @@ const nav = [
 export function SiteLayout() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/" });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -35,6 +43,7 @@ export function SiteLayout() {
                 <Link
                   key={n.to}
                   to={n.to}
+                  preload="intent"
                   className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                     active
                       ? "bg-primary text-primary-foreground shadow-soft"
@@ -54,6 +63,20 @@ export function SiteLayout() {
             >
               <MessageCircle className="size-4" /> Ask AI
             </Link>
+            {user ? (
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="size-9 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold uppercase" title={user.email ?? ""}>
+                  {(user.user_metadata?.full_name || user.email || "U").slice(0, 1)}
+                </div>
+                <button onClick={handleSignOut} title="Sign out" className="size-9 rounded-full bg-secondary hover:bg-accent grid place-items-center">
+                  <LogOut className="size-4" />
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="hidden sm:inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium hover:bg-accent transition">
+                <UserIcon className="size-4" /> Sign in
+              </Link>
+            )}
             <button
               onClick={() => setOpen((v) => !v)}
               className="lg:hidden size-10 grid place-items-center rounded-xl bg-accent"
@@ -71,6 +94,7 @@ export function SiteLayout() {
                 <Link
                   key={n.to}
                   to={n.to}
+                  preload="intent"
                   onClick={() => setOpen(false)}
                   className={`px-4 py-2.5 rounded-xl text-sm ${
                     pathname === n.to ? "bg-primary text-primary-foreground" : "hover:bg-accent"
@@ -86,6 +110,15 @@ export function SiteLayout() {
               >
                 Ask the AI Assistant
               </Link>
+              {user ? (
+                <button onClick={() => { handleSignOut(); setOpen(false); }} className="mt-1 px-4 py-2.5 rounded-xl text-sm bg-secondary text-left">
+                  Sign out ({user.email})
+                </button>
+              ) : (
+                <Link to="/login" onClick={() => setOpen(false)} className="mt-1 px-4 py-2.5 rounded-xl text-sm border border-border text-center">
+                  Sign in
+                </Link>
+              )}
             </div>
           </div>
         )}
