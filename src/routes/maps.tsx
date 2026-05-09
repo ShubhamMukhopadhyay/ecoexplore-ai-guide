@@ -190,40 +190,41 @@ function MapsPage() {
 }
 
 function LeafletMap({ pois, routeCoords, mode }: { pois: typeof POIS; routeCoords: [number, number][] | null; mode: Mode }) {
-  // Inject leaflet css client side
+  const [libs, setLibs] = useState<{ RL: any; L: any } | null>(null);
+
   useEffect(() => {
-    if (document.getElementById("leaflet-css")) return;
-    const link = document.createElement("link");
-    link.id = "leaflet-css";
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(link);
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+    Promise.all([import("react-leaflet"), import("leaflet")]).then(([RL, L]) => {
+      setLibs({ RL, L: L.default ?? L });
+    });
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const RL = (globalThis as any).__rl ?? ((globalThis as any).__rl = require("react-leaflet"));
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const L = (globalThis as any).__l ?? ((globalThis as any).__l = require("leaflet"));
+  if (!libs) {
+    return <div className="absolute inset-0 grid place-items-center text-muted-foreground text-sm">Loading map…</div>;
+  }
 
-  const { MapContainer, TileLayer, CircleMarker, Tooltip, Polyline, useMap } = RL;
+  const { MapContainer, TileLayer, CircleMarker, Tooltip, Polyline, useMap } = libs.RL;
+  const L = libs.L;
   const lineColor = mode === "fastest" ? "#ef6a55" : mode === "eco" ? "#3aa775" : "#0f766e";
 
   function FitBounds({ coords }: { coords: [number, number][] | null }) {
     const map = useMap();
     useEffect(() => {
       if (!coords || coords.length < 2) return;
-      const b = L.latLngBounds(coords as any);
-      map.fitBounds(b, { padding: [50, 50] });
+      map.fitBounds(L.latLngBounds(coords as any), { padding: [50, 50] });
     }, [coords, map]);
     return null;
   }
 
   return (
     <MapContainer center={[15.45, 73.95]} zoom={9} className="absolute inset-0" style={{ height: "100%", width: "100%" }} scrollWheelZoom>
-      <TileLayer
-        attribution='&copy; OpenStreetMap'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {pois.map((p) => (
         <CircleMarker key={p.id} center={[p.lat, p.lng]} radius={8 + p.crowd / 12}
           pathOptions={{ color: "white", weight: 2, fillColor: crowdColor(p.crowd), fillOpacity: 0.85 }}>
