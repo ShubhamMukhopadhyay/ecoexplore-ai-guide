@@ -58,7 +58,7 @@ function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-display text-2xl">Crowd density · today</h3>
-              <p className="text-sm text-muted-foreground">North Goa beach belt average</p>
+              <p className="text-sm text-foreground/70">North Goa beach belt average</p>
             </div>
             <span className="text-xs px-3 py-1 rounded-full bg-coral/15 text-coral font-medium">Peak 14:00</span>
           </div>
@@ -85,7 +85,7 @@ function Dashboard() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="bg-gradient-to-br from-eco/15 via-card to-card rounded-3xl p-6 shadow-soft border border-border/60 flex flex-col">
           <h3 className="font-display text-2xl">Region eco score</h3>
-          <p className="text-sm text-muted-foreground">Sustainability index across Goa</p>
+          <p className="text-sm text-foreground/70">Sustainability index across Goa</p>
           <div className="flex-1 grid place-items-center -my-4">
             <div className="relative size-52">
               <ResponsiveContainer width="100%" height="100%">
@@ -97,7 +97,7 @@ function Dashboard() {
               <div className="absolute inset-0 grid place-items-center">
                 <div className="text-center">
                   <div className="font-display text-5xl text-eco">8.1</div>
-                  <div className="text-xs text-muted-foreground mt-1">/ 10 · Healthy</div>
+                  <div className="text-xs text-foreground/70 mt-1">/ 10 · Healthy</div>
                 </div>
               </div>
             </div>
@@ -117,17 +117,17 @@ function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-display text-2xl">Trending spots</h3>
-              <p className="text-sm text-muted-foreground">Live crowd index — last 30 minutes</p>
+              <p className="text-sm text-foreground/70">Live crowd index — last 30 minutes</p>
             </div>
           </div>
           <ul className="space-y-4">
             {popular.map(p => (
               <li key={p.name} className="group">
                 <div className="flex items-center justify-between text-sm mb-1.5">
-                  <span className="font-medium flex items-center gap-2"><MapPin className="size-3.5 text-muted-foreground" /> {p.name}</span>
+                  <span className="font-medium flex items-center gap-2"><MapPin className="size-3.5 text-foreground/70" /> {p.name}</span>
                   <div className="flex items-center gap-3">
                     <span className={p.trend.startsWith("+") ? "text-coral text-xs font-medium" : "text-eco text-xs font-medium"}>{p.trend}</span>
-                    <span className="text-xs text-muted-foreground tabular-nums w-9 text-right">{p.crowd}%</span>
+                    <span className="text-xs text-foreground/70 tabular-nums w-9 text-right">{p.crowd}%</span>
                   </div>
                 </div>
                 <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
@@ -142,12 +142,12 @@ function Dashboard() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="bg-card rounded-3xl p-6 shadow-soft border border-border/60">
           <h3 className="font-display text-2xl mb-1 flex items-center gap-2"><AlertTriangle className="size-5 text-coral" /> Live alerts</h3>
-          <p className="text-sm text-muted-foreground mb-4">Fresh signals from the field</p>
+          <p className="text-sm text-foreground/70 mb-4">Fresh signals from the field</p>
           <ul className="space-y-3">
             {alerts.map((a) => (
               <li key={a.title} className={`rounded-2xl p-4 ${a.tone === "coral" ? "bg-coral/10" : "bg-sun/15"}`}>
                 <div className="font-medium text-sm">{a.title}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{a.desc}</div>
+                <div className="text-xs text-foreground/70 mt-0.5">{a.desc}</div>
               </li>
             ))}
           </ul>
@@ -185,9 +185,9 @@ function Dashboard() {
                 <div className="size-11 rounded-xl bg-gradient-to-br from-primary/20 to-eco/20 grid place-items-center text-xs font-semibold text-primary">{e.date}</div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm">{e.title}</div>
-                  <div className="text-xs text-muted-foreground">{e.place} · {e.tag}</div>
+                  <div className="text-xs text-foreground/70">{e.place} · {e.tag}</div>
                 </div>
-                <ArrowUpRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition" />
+                <ArrowUpRight className="size-4 text-foreground/70 opacity-0 group-hover:opacity-100 transition" />
               </li>
             ))}
           </ul>
