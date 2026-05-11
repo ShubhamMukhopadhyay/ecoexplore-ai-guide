@@ -33,7 +33,7 @@ const sampleItinerary = (days: number, vibe: string): Day[] => {
 };
 
 function Planner() {
-  const [form, setForm] = useState({ days: 5, budget: "Mid", vibe: "Beaches & cafés", group: "Couple", food: "Vegetarian" });
+  const [form, setForm] = useState({ days: 5, budget: 25000, vibe: "Beaches & cafés", group: "Couple", food: "Vegetarian" });
   const [loading, setLoading] = useState(false);
   const [trip, setTrip] = useState<Day[] | null>(null);
 
@@ -65,8 +65,23 @@ function Planner() {
               <div className="text-sm text-muted-foreground mt-1">{form.days} days</div>
             </Field>
 
-            <Field label="Budget">
-              <Pills value={form.budget} onChange={v => setForm({ ...form, budget: v })} options={["Low", "Mid", "Lux"]} />
+            <Field label="Budget (₹ total)">
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">₹</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={500}
+                  inputMode="numeric"
+                  value={form.budget}
+                  onChange={e => setForm({ ...form, budget: Math.max(0, +e.target.value || 0) })}
+                  placeholder="25000"
+                  className="w-full rounded-full bg-secondary/60 border border-border pl-8 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:bg-card transition tabular-nums"
+                />
+              </div>
+              <div className="text-xs text-muted-foreground mt-1.5">
+                ≈ ₹{Math.round(form.budget / Math.max(1, form.days)).toLocaleString("en-IN")} / day
+              </div>
             </Field>
 
             <Field label="Vibe">
