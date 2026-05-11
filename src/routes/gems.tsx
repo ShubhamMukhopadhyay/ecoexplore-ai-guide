@@ -3,9 +3,14 @@ import { motion } from "framer-motion";
 import { Sparkles, MapPin } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import beach from "@/assets/gem-beach.jpg";
+import beach2 from "@/assets/gem-beach2.jpg";
+import beach3 from "@/assets/gem-beach3.jpg";
 import cafe from "@/assets/gem-cafe.jpg";
+import cafe2 from "@/assets/gem-cafe2.jpg";
 import heritage from "@/assets/gem-heritage.jpg";
+import heritage2 from "@/assets/gem-heritage2.jpg";
 import waterfall from "@/assets/gem-waterfall.jpg";
+import feast from "@/assets/gem-feast.jpg";
 
 export const Route = createFileRoute("/gems")({
   head: () => ({
@@ -19,11 +24,11 @@ export const Route = createFileRoute("/gems")({
 
 const gems = [
   { img: beach, title: "Cola Beach Lagoon", area: "Canacona", tags: ["Beach", "Quiet"], story: "A freshwater lagoon meets the Arabian Sea. Stay in a beach tent and watch fireflies." },
-  { img: cafe, title: "For The Record · Vinyl Bar", area: "Assagao", tags: ["Café", "Music"], story: "House in a Portuguese mansion. Records, sourdough, and a courtyard you'll never want to leave." },
-  { img: heritage, title: "Reis Magos Fort", area: "Bardez", tags: ["Heritage", "View"], story: "Lovingly restored 16th-century fort with the best view of Panjim across the river." },
+  { img: cafe2, title: "For The Record · Vinyl Bar", area: "Assagao", tags: ["Café", "Music"], story: "House in a Portuguese mansion. Records, sourdough, and a courtyard you'll never want to leave." },
+  { img: heritage2, title: "Reis Magos Fort", area: "Bardez", tags: ["Heritage", "View"], story: "Lovingly restored 16th-century fort with the best view of Panjim across the river." },
   { img: waterfall, title: "Tambdi Surla Trail", area: "Mollem", tags: ["Nature", "Hike"], story: "Tucked behind India's oldest temple, a moss-soft trail to a hidden cascade." },
-  { img: beach, title: "Galgibaga (Turtle) Beach", area: "Galgibaga", tags: ["Beach", "Wildlife"], story: "Olive Ridley turtles nest here. Walk barefoot, leave nothing behind." },
-  { img: cafe, title: "Sunday Sao Joao Feast", area: "Siolim", tags: ["Culture", "Food"], story: "A village feast of sorpotel, vindaloo and feni. Open-house, like Goa was made for." },
+  { img: beach3, title: "Galgibaga (Turtle) Beach", area: "Galgibaga", tags: ["Beach", "Wildlife"], story: "Olive Ridley turtles nest here. Walk barefoot, leave nothing behind." },
+  { img: feast, title: "Sunday Sao Joao Feast", area: "Siolim", tags: ["Culture", "Food"], story: "A village feast of sorpotel, vindaloo and feni. Open-house, like Goa was made for." },
 ];
 
 function Gems() {
