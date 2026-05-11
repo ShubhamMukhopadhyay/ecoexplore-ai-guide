@@ -33,7 +33,7 @@ const sampleItinerary = (days: number, vibe: string): Day[] => {
 };
 
 function Planner() {
-  const [form, setForm] = useState({ days: 5, budget: "Mid", vibe: "Beaches & cafés", group: "Couple", food: "Vegetarian" });
+  const [form, setForm] = useState({ days: 5, budget: 25000, vibe: "Beaches & cafés", group: "Couple", food: "Vegetarian" });
   const [loading, setLoading] = useState(false);
   const [trip, setTrip] = useState<Day[] | null>(null);
 
@@ -65,8 +65,23 @@ function Planner() {
               <div className="text-sm text-muted-foreground mt-1">{form.days} days</div>
             </Field>
 
-            <Field label="Budget">
-              <Pills value={form.budget} onChange={v => setForm({ ...form, budget: v })} options={["Low", "Mid", "Lux"]} />
+            <Field label="Budget (₹ total)">
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">₹</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={500}
+                  inputMode="numeric"
+                  value={form.budget}
+                  onChange={e => setForm({ ...form, budget: Math.max(0, +e.target.value || 0) })}
+                  placeholder="25000"
+                  className="w-full rounded-full bg-secondary/60 border border-border pl-8 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:bg-card transition tabular-nums"
+                />
+              </div>
+              <div className="text-xs text-muted-foreground mt-1.5">
+                ≈ ₹{Math.round(form.budget / Math.max(1, form.days)).toLocaleString("en-IN")} / day
+              </div>
             </Field>
 
             <Field label="Vibe">
@@ -107,26 +122,45 @@ function Planner() {
             )}
             {trip && !loading && trip.map((d, i) => (
               <motion.div key={d.day} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-                className="bg-card rounded-3xl p-6 sm:p-7 shadow-soft border border-border/60">
-                <div className="flex items-center justify-between mb-5">
-                  <div>
-                    <div className="text-xs uppercase tracking-widest text-primary font-semibold">Day {d.day}</div>
-                    <h3 className="font-display text-2xl mt-1">{d.title}</h3>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 bg-eco/15 text-eco rounded-full px-3 py-1 text-sm font-medium">
-                    <Leaf className="size-3.5" /> Eco {d.eco}
-                  </span>
-                </div>
-                <ol className="space-y-3">
-                  {d.items.map((it, j) => (
-                    <li key={j} className="flex gap-4 group">
-                      <div className="text-xs text-muted-foreground w-12 pt-2">{it.time}</div>
-                      <div className="size-9 rounded-xl bg-secondary grid place-items-center text-primary shrink-0">
-                        <it.icon className="size-4" />
+                className="relative bg-card rounded-3xl shadow-soft border border-border/60 overflow-hidden hover:shadow-glow transition-all">
+                {/* Decorative gradient header */}
+                <div className="relative bg-gradient-to-br from-primary/12 via-eco/10 to-sun/15 px-6 sm:px-7 pt-6 pb-5 border-b border-border/60">
+                  <div className="absolute -top-10 -right-10 size-40 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+                  <div className="relative flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-4">
+                      <div className="size-14 rounded-2xl bg-gradient-to-br from-primary to-eco text-primary-foreground grid place-items-center shadow-glow shrink-0">
+                        <div className="text-center leading-tight">
+                          <div className="text-[9px] uppercase tracking-widest opacity-80">Day</div>
+                          <div className="font-display text-xl">{d.day}</div>
+                        </div>
                       </div>
-                      <div className="flex-1 border-l-2 border-border pl-4 pb-1">
-                        <div className="font-medium flex items-center gap-1.5"><MapPin className="size-3.5 text-muted-foreground" />{it.place}</div>
-                        <div className="text-sm text-muted-foreground">{it.note}</div>
+                      <div>
+                        <h3 className="font-display text-2xl text-foreground leading-tight">{d.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{d.items.length} stops · curated by AI</p>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 bg-card/80 backdrop-blur text-eco rounded-full px-3 py-1.5 text-sm font-semibold shadow-soft border border-eco/20 shrink-0">
+                      <Leaf className="size-3.5" /> {d.eco}
+                    </span>
+                  </div>
+                </div>
+                <ol className="p-6 sm:p-7 space-y-1">
+                  {d.items.map((it, j) => (
+                    <li key={j} className="flex gap-4 group relative">
+                      <div className="text-xs font-semibold text-primary w-14 pt-3 tabular-nums shrink-0">{it.time}</div>
+                      <div className="relative flex flex-col items-center shrink-0">
+                        <div className="size-10 rounded-xl bg-gradient-to-br from-secondary to-accent grid place-items-center text-primary shadow-soft group-hover:scale-110 group-hover:shadow-glow transition">
+                          <it.icon className="size-4" />
+                        </div>
+                        {j < d.items.length - 1 && (
+                          <div className="w-px flex-1 bg-gradient-to-b from-border to-transparent my-1" />
+                        )}
+                      </div>
+                      <div className="flex-1 pb-5 pt-2">
+                        <div className="font-medium text-foreground flex items-center gap-1.5">
+                          <MapPin className="size-3.5 text-primary" />{it.place}
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-1 leading-relaxed">{it.note}</div>
                       </div>
                     </li>
                   ))}
