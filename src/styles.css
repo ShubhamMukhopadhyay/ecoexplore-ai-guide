@@ -175,3 +175,9 @@
     opacity: 0.04; pointer-events: none;
   }
 }
+
+/* Hide scrollbar utility for in-page nav */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
