@@ -88,7 +88,7 @@ export function SiteLayout() {
         </div>
 
         {open && (
-          <div className="lg:hidden mx-auto max-w-7xl mt-2 glass rounded-2xl p-3 shadow-soft">
+          <div className="lg:hidden mx-auto max-w-7xl mt-2 glass-strong rounded-2xl p-3 shadow-soft relative z-10">
             <div className="flex flex-col">
               {nav.map((n) => (
                 <Link
