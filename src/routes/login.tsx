@@ -100,19 +100,7 @@ function LoginPage() {
             {mode === "signin" ? "Sign in to continue your trip." : "Start planning your perfect Goa escape."}
           </p>
 
-          <button
-            onClick={handleGoogle}
-            disabled={busy}
-            className="mt-7 w-full flex items-center justify-center gap-3 rounded-xl border border-border bg-card hover:bg-accent transition py-3 text-sm font-medium disabled:opacity-60"
-          >
-            <GoogleIcon /> Continue with Google
-          </button>
-
-          <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> or with email <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <form onSubmit={handleEmail} className="space-y-3">
+          <form onSubmit={handleEmail} className="mt-7 space-y-3">
             {mode === "signup" && (
               <Input icon={<Sparkles className="size-4" />} type="text" placeholder="Full name" value={name} onChange={setName} />
             )}
