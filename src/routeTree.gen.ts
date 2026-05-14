@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SustainabilityRouteImport } from './routes/sustainability'
+import { Route as RentalsRouteImport } from './routes/rentals'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as MapsRouteImport } from './routes/maps'
 import { Route as LoginRouteImport } from './routes/login'
@@ -24,6 +25,11 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 const SustainabilityRoute = SustainabilityRouteImport.update({
   id: '/sustainability',
   path: '/sustainability',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RentalsRoute = RentalsRouteImport.update({
+  id: '/rentals',
+  path: '/rentals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlannerRoute = PlannerRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/maps': typeof MapsRoute
   '/planner': typeof PlannerRoute
+  '/rentals': typeof RentalsRoute
   '/sustainability': typeof SustainabilityRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/maps': typeof MapsRoute
   '/planner': typeof PlannerRoute
+  '/rentals': typeof RentalsRoute
   '/sustainability': typeof SustainabilityRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/maps': typeof MapsRoute
   '/planner': typeof PlannerRoute
+  '/rentals': typeof RentalsRoute
   '/sustainability': typeof SustainabilityRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/maps'
     | '/planner'
+    | '/rentals'
     | '/sustainability'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/maps'
     | '/planner'
+    | '/rentals'
     | '/sustainability'
     | '/api/chat'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/maps'
     | '/planner'
+    | '/rentals'
     | '/sustainability'
     | '/api/chat'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MapsRoute: typeof MapsRoute
   PlannerRoute: typeof PlannerRoute
+  RentalsRoute: typeof RentalsRoute
   SustainabilityRoute: typeof SustainabilityRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -180,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/sustainability'
       fullPath: '/sustainability'
       preLoaderRoute: typeof SustainabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rentals': {
+      id: '/rentals'
+      path: '/rentals'
+      fullPath: '/rentals'
+      preLoaderRoute: typeof RentalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planner': {
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MapsRoute: MapsRoute,
   PlannerRoute: PlannerRoute,
+  RentalsRoute: RentalsRoute,
   SustainabilityRoute: SustainabilityRoute,
   ApiChatRoute: ApiChatRoute,
 }
