@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, MapPin, Sun, Utensils, Bike, Leaf } from "lucide-react";
+import { Sparkles, Loader2, MapPin, Sun, Utensils, Bike, Leaf, Clock, IndianRupee, CheckCircle2, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import bikeRentalImg from "@/assets/bike-rental.jpg";
 import { SectionHeader } from "@/components/SectionHeader";
 import { RequireAuth } from "@/components/RequireAuth";
 
@@ -170,7 +171,113 @@ function Planner() {
           </AnimatePresence>
         </div>
       </div>
+
+      <BikeRentalSection />
     </div>
+  );
+}
+
+const bikes = [
+  { name: "City Cruiser", desc: "Comfy upright ride for beach roads & cafés.", tag: "Most popular" },
+  { name: "Mountain Hybrid", desc: "Geared & sturdy for hills like Chapora & Divar Island.", tag: "All-terrain" },
+  { name: "E-Bike Pedal Assist", desc: "Effortless long rides — perfect for South Goa coastlines.", tag: "Electric" },
+];
+
+const plans = [
+  { label: "Hourly", price: 50, unit: "/ hour", note: "Min. 2 hours" },
+  { label: "Half Day", price: 250, unit: "/ 5 hrs", note: "Helmet + lock included", featured: true },
+  { label: "Full Day", price: 450, unit: "/ 24 hrs", note: "Free delivery to your stay" },
+];
+
+const benefits = [
+  "Zero emissions — keep Goa's air & beaches clean",
+  "Reach hidden lanes cars can't squeeze into",
+  "Skip traffic, park anywhere, save on fuel",
+  "Burn calories while you sightsee — guilt-free feni later",
+];
+
+function BikeRentalSection() {
+  return (
+    <section className="mt-24">
+      <SectionHeader
+        eyebrow="Rent a Bike"
+        title="Pedal through Goa, the slow & sustainable way."
+        subtitle="Skip the scooter rush. Rent a bicycle by the hour or day and discover beaches, banyan-lined lanes, and quiet villages on two wheels."
+      />
+
+      <div className="mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-8 items-stretch">
+        {/* Hero card */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="relative rounded-3xl overflow-hidden shadow-soft border border-border/60 min-h-[380px] group"
+        >
+          <img src={bikeRentalImg} alt="Bicycles parked on a Goa coastal road at sunset" loading="lazy" width={1280} height={768}
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/40 to-transparent" />
+          <div className="relative h-full flex flex-col justify-end p-7 text-primary-foreground">
+            <span className="inline-flex items-center gap-1.5 bg-eco/90 backdrop-blur rounded-full px-3 py-1 text-xs font-semibold w-fit">
+              <Leaf className="size-3.5" /> Eco bonus +1.2
+            </span>
+            <h3 className="font-display text-3xl mt-3 leading-tight">Two wheels.<br/>Zero carbon.</h3>
+            <p className="text-sm text-primary-foreground/85 mt-2 max-w-md">Local rentals, helmets, locks & a pocket map of safe cycling routes — delivered free to your doorstep.</p>
+            <button className="mt-5 inline-flex items-center gap-2 bg-card text-foreground rounded-full px-5 py-2.5 text-sm font-medium w-fit hover:translate-y-[-2px] transition shadow-glow">
+              <Bike className="size-4" /> Book a bike <ArrowRight className="size-4" />
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Plans */}
+        <div className="grid sm:grid-cols-3 lg:grid-cols-1 gap-4">
+          {plans.map((p, i) => (
+            <motion.div key={p.label}
+              initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+              className={`relative rounded-2xl p-5 border transition hover:shadow-glow ${
+                p.featured ? "bg-gradient-to-br from-primary to-eco text-primary-foreground border-transparent shadow-glow" : "bg-card border-border/60"
+              }`}>
+              {p.featured && <span className="absolute top-3 right-3 text-[10px] uppercase tracking-widest bg-card/20 backdrop-blur px-2 py-0.5 rounded-full">Best value</span>}
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wider opacity-80"><Clock className="size-3.5" /> {p.label}</div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <IndianRupee className="size-5 opacity-80" />
+                <span className="font-display text-4xl tabular-nums">{p.price}</span>
+                <span className="text-xs opacity-75">{p.unit}</span>
+              </div>
+              <p className={`text-xs mt-2 ${p.featured ? "text-primary-foreground/85" : "text-muted-foreground"}`}>{p.note}</p>
+              <button className={`mt-4 w-full rounded-full py-2 text-sm font-medium transition ${
+                p.featured ? "bg-card text-foreground hover:opacity-95" : "bg-secondary hover:bg-accent"
+              }`}>Book now</button>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bike types & benefits */}
+      <div className="mt-8 grid lg:grid-cols-[1.4fr_1fr] gap-8">
+        <div className="grid sm:grid-cols-3 gap-4">
+          {bikes.map((b, i) => (
+            <motion.div key={b.name}
+              initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+              className="bg-card rounded-2xl p-5 border border-border/60 shadow-soft hover:shadow-glow hover:-translate-y-1 transition">
+              <div className="size-10 rounded-xl bg-gradient-to-br from-secondary to-accent grid place-items-center text-primary"><Bike className="size-5" /></div>
+              <div className="mt-3 text-[10px] uppercase tracking-widest text-primary font-semibold">{b.tag}</div>
+              <div className="font-display text-lg mt-0.5">{b.name}</div>
+              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{b.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="bg-gradient-to-br from-eco/10 via-primary/10 to-sun/10 rounded-2xl p-6 border border-border/60">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-eco font-semibold"><Leaf className="size-4" /> Why pedal?</div>
+          <h4 className="font-display text-2xl mt-2 leading-snug">Travel light. Travel kind.</h4>
+          <ul className="mt-4 space-y-2.5">
+            {benefits.map(b => (
+              <li key={b} className="flex gap-2.5 text-sm text-foreground/85">
+                <CheckCircle2 className="size-4 text-eco mt-0.5 shrink-0" /> {b}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
   );
 }
 
