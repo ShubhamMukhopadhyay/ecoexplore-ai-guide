@@ -28,7 +28,7 @@ export function SiteLayout() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-50 px-4 pt-4">
-        <div className="mx-auto max-w-7xl glass rounded-2xl shadow-soft px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="mx-auto max-w-7xl glass-strong rounded-2xl shadow-soft px-4 sm:px-6 py-3 flex items-center justify-between relative z-10">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="size-9 rounded-xl bg-gradient-eco grid place-items-center shadow-glow">
               <Leaf className="size-5 text-primary-foreground" />
@@ -88,7 +88,7 @@ export function SiteLayout() {
         </div>
 
         {open && (
-          <div className="lg:hidden mx-auto max-w-7xl mt-2 glass rounded-2xl p-3 shadow-soft">
+          <div className="lg:hidden mx-auto max-w-7xl mt-2 glass-strong rounded-2xl p-3 shadow-soft relative z-10">
             <div className="flex flex-col">
               {nav.map((n) => (
                 <Link
