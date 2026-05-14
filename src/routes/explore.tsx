@@ -89,6 +89,12 @@ function Explore() {
             className="flex-1 bg-transparent outline-none text-sm"
           />
         </div>
+        <Link
+          to="/rentals"
+          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 bg-gradient-eco text-primary-foreground text-sm font-medium shadow-glow hover:opacity-90 transition whitespace-nowrap"
+        >
+          <Bike className="size-4" /> Book a bike
+        </Link>
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
           {tags.map(t => (
             <button
