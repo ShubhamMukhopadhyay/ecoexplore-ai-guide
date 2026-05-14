@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, Star, X, Leaf, Users, Clock } from "lucide-react";
+import { Search, MapPin, Star, X, Leaf, Users, Clock, Bike } from "lucide-react";
 import { useState } from "react";
 import { SectionHeader } from "@/components/SectionHeader";
 import beach from "@/assets/gem-beach.jpg";
