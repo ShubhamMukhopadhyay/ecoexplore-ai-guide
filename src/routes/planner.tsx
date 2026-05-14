@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, MapPin, Sun, Utensils, Bike, Leaf } from "lucide-react";
+import { Sparkles, Loader2, MapPin, Sun, Utensils, Bike, Leaf, Clock, IndianRupee, CheckCircle2, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import bikeRentalImg from "@/assets/bike-rental.jpg";
 import { SectionHeader } from "@/components/SectionHeader";
 import { RequireAuth } from "@/components/RequireAuth";
 
