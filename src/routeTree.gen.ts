@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SustainabilityRouteImport } from './routes/sustainability'
 import { Route as RentalsRouteImport } from './routes/rentals'
 import { Route as PlannerRouteImport } from './routes/planner'
-import { Route as RentalsRouteImport } from './routes/rentals'
 import { Route as MapsRouteImport } from './routes/maps'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GemsRouteImport } from './routes/gems'
@@ -36,11 +35,6 @@ const RentalsRoute = RentalsRouteImport.update({
 const PlannerRoute = PlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RentalsRoute = RentalsRouteImport.update({
-  id: '/rentals',
-  path: '/rentals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapsRoute = MapsRouteImport.update({
