@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Navigation, Leaf, Users, Clock, Route as RouteIcon, Sparkles, AlertTriangle, Loader2 } from "lucide-react";
+import { Navigation, Leaf, Users, Clock, Route as RouteIcon, Sparkles, AlertTriangle, Loader2, Bike } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SectionHeader } from "@/components/SectionHeader";
 
