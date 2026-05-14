@@ -131,6 +131,13 @@ function MapsPage() {
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Navigation className="size-4" />} {loading ? "Routing…" : "Find smart route"}
           </button>
 
+          <Link
+            to="/rentals"
+            className="mt-3 w-full inline-flex justify-center items-center gap-2 rounded-full bg-secondary text-secondary-foreground py-3 font-medium hover:bg-accent transition"
+          >
+            <Bike className="size-4" /> Book a bike / bicycle
+          </Link>
+
           <div className="mt-6 pt-5 border-t border-border">
             <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Crowd legend</div>
             <div className="space-y-1.5 text-xs">
